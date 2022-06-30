@@ -1,3 +1,11 @@
+package ru.yandex.kanban.tasks;
+
+import ru.yandex.kanban.model.enums.TaskType;
+import ru.yandex.kanban.model.enums.TaskStatus;
+import ru.yandex.kanban.service.Manager;
+
+import java.util.Objects;
+
 public class Task {
     protected int id;
     protected String name;
@@ -5,7 +13,7 @@ public class Task {
     protected TaskType.taskType type;
     protected TaskStatus.taskStatus status;
 
-    Task(String name, String description) {
+    public Task(String name, String description) {
         this.id = Manager.getNewTaskId();
         this.name = name;
         this.description = description;
@@ -15,7 +23,7 @@ public class Task {
     }
 
     //Конструктор для дебага
-    Task(int id, String name, String description, TaskStatus.taskStatus status) {
+    public Task(int id, String name, String description, TaskStatus.taskStatus status) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -25,6 +33,14 @@ public class Task {
 
     public int getId() {
         return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getDescription() {
+        return description;
     }
 
     public TaskStatus.taskStatus getStatus() {
@@ -44,5 +60,18 @@ public class Task {
                 ", type=" + type +
                 ", status=" + status +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (this.getClass() != obj.getClass()) return false;
+        Task otherTask = (Task) obj;
+        return (id == otherTask.id) &&
+                Objects.equals(name, otherTask.name) &&
+                Objects.equals(description, otherTask.description) &&
+                (type == otherTask.type) &&
+                (status == otherTask.status);
     }
 }

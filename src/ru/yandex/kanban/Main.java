@@ -1,3 +1,10 @@
+package ru.yandex.kanban;
+import ru.yandex.kanban.model.enums.TaskStatus;
+import ru.yandex.kanban.service.Manager;
+import ru.yandex.kanban.tasks.Epic;
+import ru.yandex.kanban.tasks.SubTask;
+import ru.yandex.kanban.tasks.Task;
+
 public class Main {
 
     public static void main(String[] args) {
@@ -17,28 +24,34 @@ public class Main {
         SubTask tempSubTaskForDebug;
 
         tempTaskForDebug = Manager.getTask(1);
-        tempTaskForDebug = new Task(tempTaskForDebug.id, tempTaskForDebug.name + " (обновлено1)", tempTaskForDebug.description + " (обновлено1)", TaskStatus.taskStatus.IN_PROGRESS);
+        tempTaskForDebug = new Task(tempTaskForDebug.getId(), tempTaskForDebug.getName() + " (обновлено1)",
+                tempTaskForDebug.getDescription() + " (обновлено1)", TaskStatus.taskStatus.IN_PROGRESS);
         Manager.updateTask(tempTaskForDebug);
 
         tempTaskForDebug = Manager.getTask(2);
-        tempTaskForDebug = new Task(tempTaskForDebug.id, tempTaskForDebug.name + " (обновлено1)", tempTaskForDebug.description + " (обновлено1)", TaskStatus.taskStatus.DONE);
+        tempTaskForDebug = new Task(tempTaskForDebug.getId(), tempTaskForDebug.getName() + " (обновлено1)",
+                tempTaskForDebug.getDescription() + " (обновлено1)", TaskStatus.taskStatus.DONE);
         Manager.updateTask(tempTaskForDebug);
 
         tempEpicForDebug = Manager.getEpic(3);
-        tempEpicForDebug = new Epic(tempEpicForDebug.id, tempEpicForDebug.name + " (обновлено1)", tempEpicForDebug.description + " (обновлено1)", TaskStatus.taskStatus.IN_PROGRESS, tempEpicForDebug.getSubTasksList()
+        tempEpicForDebug = new Epic(tempEpicForDebug.getId(), tempEpicForDebug.getName() + " (обновлено1)",
+                tempEpicForDebug.getDescription() + " (обновлено1)", TaskStatus.taskStatus.IN_PROGRESS, tempEpicForDebug.getSubTasksList()
         );
         Manager.updateEpic(tempEpicForDebug);
 
         tempEpicForDebug = Manager.getEpic(6);
-        tempEpicForDebug = new Epic(tempEpicForDebug.id, tempEpicForDebug.name + " (обновлено1)", tempEpicForDebug.description + " (обновлено1)", TaskStatus.taskStatus.IN_PROGRESS, tempEpicForDebug.getSubTasksList());
+        tempEpicForDebug = new Epic(tempEpicForDebug.getId(), tempEpicForDebug.getName() + " (обновлено1)",
+                tempEpicForDebug.getDescription() + " (обновлено1)", TaskStatus.taskStatus.IN_PROGRESS, tempEpicForDebug.getSubTasksList());
         Manager.updateEpic(tempEpicForDebug);
 
         tempSubTaskForDebug = Manager.getSubTask(4);
-        tempSubTaskForDebug = new SubTask(tempSubTaskForDebug.id, tempSubTaskForDebug.name + " (обновлено1)", tempSubTaskForDebug.description + " (обновлено1)", tempSubTaskForDebug.epicId, TaskStatus.taskStatus.IN_PROGRESS);
+        tempSubTaskForDebug = new SubTask(tempSubTaskForDebug.getId(), tempSubTaskForDebug.getName() + " (обновлено1)",
+                tempSubTaskForDebug.getDescription() + " (обновлено1)", tempSubTaskForDebug.getEpicId(), TaskStatus.taskStatus.IN_PROGRESS);
         Manager.updateSubTask(tempSubTaskForDebug);
 
         tempSubTaskForDebug = Manager.getSubTask(7);
-        tempSubTaskForDebug = new SubTask(tempSubTaskForDebug.id, tempSubTaskForDebug.name + " (обновлено1)", tempSubTaskForDebug.description + " (обновлено1)", tempSubTaskForDebug.epicId, TaskStatus.taskStatus.DONE);
+        tempSubTaskForDebug = new SubTask(tempSubTaskForDebug.getId(), tempSubTaskForDebug.getName() + " (обновлено1)",
+                tempSubTaskForDebug.getDescription() + " (обновлено1)", tempSubTaskForDebug.getEpicId(), TaskStatus.taskStatus.DONE);
         Manager.updateSubTask(tempSubTaskForDebug);
         System.out.println(Manager.getAllTasks());
         System.out.println(Manager.getAllEpics());
