@@ -4,7 +4,7 @@ import ru.yandex.kanban.tasks.Epic;
 import ru.yandex.kanban.tasks.SubTask;
 import ru.yandex.kanban.tasks.Task;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public interface TaskManager {
 
@@ -19,7 +19,7 @@ public interface TaskManager {
 
     Task getTask(int taskId);
 
-    ArrayList<Task> getAllTasks();
+    List<Task> getAllTasks();
 
     // Методы EPIC
     int addNewEpic(String name, String description);
@@ -32,9 +32,9 @@ public interface TaskManager {
 
     Epic getEpic(int epicId);
 
-    ArrayList<Epic> getAllEpics();
+    List<Epic> getAllEpics();
 
-    ArrayList<SubTask> getAllSubTasksByEpic(int epicId);
+    List<SubTask> getAllSubTasksByEpic(int epicId);
 
     // Методы SUBTASK
     int addNewSubTask(String name, String description, int epicId);
@@ -47,5 +47,5 @@ public interface TaskManager {
 
     SubTask getSubTask(int subTaskId);
 
-    ArrayList<SubTask> getAllSubTasks();
+    List<SubTask> getAllSubTasks();
 }

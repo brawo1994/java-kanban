@@ -7,13 +7,14 @@ import ru.yandex.kanban.tasks.Task;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class InMemoryTaskManager implements TaskManager {
-    protected static int lastTaskId = 0;
-    protected static HashMap<Integer, Task> tasks = new HashMap<>();
-    protected static HashMap<Integer, Epic> epics = new HashMap<>();
-    protected static HashMap<Integer, SubTask> subTasks = new HashMap<>();
-    protected static HistoryManager historyManager = Managers.getDefaultHistoryManager();
+    protected int lastTaskId = 0;
+    protected final HashMap<Integer, Task> tasks = new HashMap<>();
+    protected final HashMap<Integer, Epic> epics = new HashMap<>();
+    protected final HashMap<Integer, SubTask> subTasks = new HashMap<>();
+    protected final HistoryManager historyManager = Managers.getDefaultHistoryManager();
 
     protected int getNewTaskId() {
         return ++lastTaskId;
@@ -64,7 +65,7 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public ArrayList<Task> getAllTasks() {
+    public List<Task> getAllTasks() {
         for (int taskId : tasks.keySet()) {
             historyManager.add(tasks.get(taskId));
         }
@@ -128,7 +129,7 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public ArrayList<Epic> getAllEpics() {
+    public List<Epic> getAllEpics() {
         for (int epicId : epics.keySet()) {
             historyManager.add(tasks.get(epicId));
         }
@@ -136,7 +137,7 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public ArrayList<SubTask> getAllSubTasksByEpic(int epicId) {
+    public List<SubTask> getAllSubTasksByEpic(int epicId) {
         ArrayList<SubTask> subTaskList = new ArrayList<>();
         for (int subTaskId : epics.get(epicId).getSubTasksList()) {
             subTaskList.add(subTasks.get(subTaskId));
@@ -206,7 +207,7 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public ArrayList<SubTask> getAllSubTasks() {
+    public List<SubTask> getAllSubTasks() {
         for (int subTaskId : subTasks.keySet()){
             historyManager.add(subTasks.get(subTaskId));
         }
