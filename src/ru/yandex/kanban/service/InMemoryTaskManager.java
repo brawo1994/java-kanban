@@ -4,30 +4,35 @@ import ru.yandex.kanban.model.enums.TaskStatus;
 import ru.yandex.kanban.tasks.Epic;
 import ru.yandex.kanban.tasks.SubTask;
 import ru.yandex.kanban.tasks.Task;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class Manager {
+public class InMemoryTaskManager implements TaskManager {
     protected static int lastTaskId = 0;
     protected static HashMap<Integer, Task> tasks = new HashMap<>();
     protected static HashMap<Integer, Epic> epics = new HashMap<>();
     protected static HashMap<Integer, SubTask> subTasks = new HashMap<>();
+    protected static HistoryManager historyManager = Managers.getDefaultHistoryManager();
 
-    public static int getNewTaskId() {
+    protected int getNewTaskId() {
         return ++lastTaskId;
     }
 
     // Методы для TASK
-    public static void addNewTask(String name, String description) {
+    @Override
+    public int addNewTask(String name, String description) {
         if (name.isEmpty() || description.isEmpty()) {
             System.out.println("Ошибка! Название или описание пустое");
-            return;
+            return 0;
         }
-        Task task = new Task(name, description);
+        Task task = new Task(getNewTaskId(), name, description);
         tasks.put(task.getId(), task);
+        return task.getId();
     }
 
-    public static void updateTask(Task task) {
+    @Override
+    public void updateTask(Task task) {
         if (!tasks.containsKey(task.getId())) {
             System.out.println("Ошибка! Задача с идентификатором " + task.getId() + " не найдена!");
             return;
@@ -35,40 +40,51 @@ public class Manager {
         tasks.put(task.getId(), task);
     }
 
-    public static void deleteAllTasks() {
+    @Override
+    public void deleteAllTasks() {
         tasks.clear();
     }
 
-    public static void deleteTask(int taskId) {
+    @Override
+    public void deleteTask(int taskId) {
         if (!tasks.containsKey(taskId)) {
             System.out.println("Ошибка! Задача с идентификатором " + taskId + " не найдена!");
         }
         tasks.remove(taskId);
     }
 
-    public static Task getTask(int taskId) {
+    @Override
+    public Task getTask(int taskId) {
         if (!tasks.containsKey(taskId)) {
             System.out.println("Ошибка! Задача с идентификатором " + taskId + " не найдена!");
             return null;
         }
+        historyManager.add(tasks.get(taskId));
         return tasks.get(taskId);
     }
 
-    public static ArrayList<Task> getAllTasks() {
+    @Override
+    public ArrayList<Task> getAllTasks() {
+        for (int taskId : tasks.keySet()) {
+            historyManager.add(tasks.get(taskId));
+        }
         return new ArrayList<>(tasks.values());
     }
 
     // Методы EPIC
-    public static void addNewEpic(String name, String description) {
+    @Override
+    public int addNewEpic(String name, String description) {
         if (name.isEmpty() || description.isEmpty()) {
             System.out.println("Ошибка! Название или описание пустое");
-            return;
+            return 0;
         }
-        Epic epic = new Epic(name, description);
+        Epic epic = new Epic(getNewTaskId(), name, description);
         epics.put(epic.getId(), epic);
+        return epic.getId();
     }
 
-    public static void updateEpic(Epic epic) {
+    @Override
+    public void updateEpic(Epic epic) {
         if (!epics.containsKey(epic.getId())) {
             System.out.println("Ошибка! Эпик с идентификатором " + epic.getId() + " не найден!");
             return;
@@ -80,7 +96,8 @@ public class Manager {
         epics.put(epic.getId(), epic);
     }
 
-    public static void deleteAllEpics() {
+    @Override
+    public void deleteAllEpics() {
         for (Epic epic : epics.values()) {
             if (!epic.getSubTasksList().isEmpty()) {
                 System.out.println("Ошибка! Невозможно удалить Эпик c id:" + epic.getId() + ", так как у него присутствуют подзадачи");
@@ -90,7 +107,8 @@ public class Manager {
         }
     }
 
-    public static void deleteEpic(int epicId) {
+    @Override
+    public void deleteEpic(int epicId) {
         if (!epics.containsKey(epicId)) {
             System.out.println("Ошибка! Эпик с идентификатором " + epicId + " не найден!");
             return;
@@ -102,16 +120,23 @@ public class Manager {
         epics.remove(epicId);
     }
 
-    public static Epic getEpic(int epicId) {
+    @Override
+    public Epic getEpic(int epicId) {
         if (!epics.containsKey(epicId)) System.out.println("Ошибка! Эпик с идентификатором " + epicId + " не найден!");
+        historyManager.add(epics.get(epicId));
         return epics.get(epicId);
     }
 
-    public static ArrayList<Epic> getAllEpics() {
+    @Override
+    public ArrayList<Epic> getAllEpics() {
+        for (int epicId : epics.keySet()) {
+            historyManager.add(tasks.get(epicId));
+        }
         return new ArrayList<>(epics.values());
     }
 
-    public static ArrayList<SubTask> getAllSubTasksByEpic(int epicId) {
+    @Override
+    public ArrayList<SubTask> getAllSubTasksByEpic(int epicId) {
         ArrayList<SubTask> subTaskList = new ArrayList<>();
         for (int subTaskId : epics.get(epicId).getSubTasksList()) {
             subTaskList.add(subTasks.get(subTaskId));
@@ -120,24 +145,27 @@ public class Manager {
     }
 
     // Методы SUBTASK
-    public static void addNewSubTask(String name, String description, int epicId) {
+    @Override
+    public int addNewSubTask(String name, String description, int epicId) {
         if (name.isEmpty() || description.isEmpty()) {
             System.out.println("Ошибка! Название или описание пустое");
-            return;
+            return 0;
         }
         if (!epics.containsKey(epicId)) {
             System.out.println("Ошибка! Эпик с идентификатором " + epicId + " не найден!");
-            return;
+            return 0;
         }
-        SubTask subTask = new SubTask(name, description, epicId);
+        SubTask subTask = new SubTask(getNewTaskId(), name, description, epicId);
         subTasks.put(subTask.getId(), subTask); //Добавляем Подзадачу
         epics.get(epicId).addSubTask(subTask.getId()); //Добавляем идентификатор подзадачи в Эпик, к которому привязываем подзадачу
         if (epics.get(epicId).getStatus() == TaskStatus.taskStatus.DONE) {
             calculateEpicStatus(epicId); //Если статус Эпика DONE, то нужно запустить перерасчет статуса Эпика
         }
+        return subTask.getId();
     }
 
-    public static void updateSubTask(SubTask subTask) {
+    @Override
+    public void updateSubTask(SubTask subTask) {
         if (!subTasks.containsKey(subTask.getId())) {
             System.out.println("Ошибка! Подзадача с идентификатором " + subTask.getId() + "не найдена!");
             return;
@@ -149,14 +177,16 @@ public class Manager {
         }
     }
 
-    public static void deleteAllSubTask() {
+    @Override
+    public void deleteAllSubTask() {
         //Запускаем в цикле удаление Подзадач по одной, так как нужно пересчитывать статус Эпика
         for (SubTask subTask : subTasks.values()) {
             deleteSubTask(subTask.getId());
         }
     }
 
-    public static void deleteSubTask(int subTaskId) {
+    @Override
+    public void deleteSubTask(int subTaskId) {
         if (!subTasks.containsKey(subTaskId)) {
             System.out.println("Ошибка! Подзадача с идентификатором " + subTaskId + " не найдена!");
         }
@@ -166,18 +196,24 @@ public class Manager {
         subTasks.remove(subTaskId); //Удаляем саму Подзадачу
     }
 
-    public static SubTask getSubTask(int subTaskId) {
+    @Override
+    public SubTask getSubTask(int subTaskId) {
         if (!subTasks.containsKey(subTaskId)) {
             System.out.println("Ошибка! Подзадача с идентификатором " + subTaskId + " не найдена!");
         }
+        historyManager.add(subTasks.get(subTaskId));
         return subTasks.get(subTaskId);
     }
 
-    public static ArrayList<SubTask> getAllSubTasks() {
+    @Override
+    public ArrayList<SubTask> getAllSubTasks() {
+        for (int subTaskId : subTasks.keySet()){
+            historyManager.add(subTasks.get(subTaskId));
+        }
         return new ArrayList<>(subTasks.values());
     }
 
-    private static void calculateEpicStatus(int epicId) {
+    protected void calculateEpicStatus(int epicId) {
         HashMap<TaskStatus.taskStatus, Integer> subTasksStatus = new HashMap<>();
         subTasksStatus.put(TaskStatus.taskStatus.NEW, 0);
         subTasksStatus.put(TaskStatus.taskStatus.IN_PROGRESS, 0);

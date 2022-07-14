@@ -9,8 +9,8 @@ import ru.yandex.kanban.model.enums.TaskType;
 public class Epic extends Task {
     protected ArrayList<Integer> subTasksList;
 
-    public Epic(String name, String description) {
-        super(name, description);
+    public Epic(int id, String name, String description) {
+        super(id, name, description);
         super.type = TaskType.taskType.EPIC;
         subTasksList = new ArrayList<>();
     }
@@ -36,7 +36,7 @@ public class Epic extends Task {
 
     @Override
     public String toString() {
-        return "Epic{" +
+        return "\nEpic{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +

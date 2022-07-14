@@ -2,7 +2,6 @@ package ru.yandex.kanban.tasks;
 
 import ru.yandex.kanban.model.enums.TaskType;
 import ru.yandex.kanban.model.enums.TaskStatus;
-import ru.yandex.kanban.service.Manager;
 
 import java.util.Objects;
 
@@ -13,8 +12,8 @@ public class Task {
     protected TaskType.taskType type;
     protected TaskStatus.taskStatus status;
 
-    public Task(String name, String description) {
-        this.id = Manager.getNewTaskId();
+    public Task(int id, String name, String description) {
+        this.id = id;
         this.name = name;
         this.description = description;
         this.type = TaskType.taskType.TASK;
@@ -53,7 +52,7 @@ public class Task {
 
     @Override
     public String toString() {
-        return "Task{" +
+        return "\nTask{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
