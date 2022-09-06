@@ -28,7 +28,7 @@ public class Main {
         taskManager.getSubTask(subTask1);
         taskManager.getEpic(epicId2);
         System.out.println("Список просмотров задач:");
-        System.out.println(historyManager.getHistory());
+        System.out.println(taskManager.getHistory());
         System.out.println();
 
         System.out.println("Список всех TaskОВ:");

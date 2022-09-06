@@ -11,13 +11,19 @@ import java.util.List;
 
 public class InMemoryTaskManager implements TaskManager {
     protected int lastTaskId = 0;
-    protected final HashMap<Integer, Task> tasks = new HashMap<>();
-    protected final HashMap<Integer, Epic> epics = new HashMap<>();
-    protected final HashMap<Integer, SubTask> subTasks = new HashMap<>();
+    private final HashMap<Integer, Task> tasks = new HashMap<>();
+    private final HashMap<Integer, Epic> epics = new HashMap<>();
+    private final HashMap<Integer, SubTask> subTasks = new HashMap<>();
     protected final HistoryManager historyManager = Managers.getDefaultHistoryManager();
 
     protected int getNewTaskId() {
         return ++lastTaskId;
+    }
+
+    // Proxy для запроса History
+    @Override
+    public List<Task> getHistory() {
+        return historyManager.getHistory();
     }
 
     // Методы для TASK

@@ -8,6 +8,9 @@ import java.util.List;
 
 public interface TaskManager {
 
+    // Proxy для History
+    List<Task> getHistory();
+
     // Методы для TASK
     int addNewTask(String name, String description);
 
