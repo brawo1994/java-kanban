@@ -49,7 +49,10 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void deleteAllTasks() {
-        tasks.clear();
+        // Запускаем в цикле удаление задач по одной, так как нужно удалять из истории просмотра
+        for (Integer taskId : tasks.keySet()) {
+            deleteTask(taskId);
+        }
     }
 
     @Override
@@ -58,6 +61,7 @@ public class InMemoryTaskManager implements TaskManager {
             System.out.println("Ошибка! Задача с идентификатором " + taskId + " не найдена!");
         }
         tasks.remove(taskId);
+        historyManager.remove(taskId);
     }
 
     @Override
@@ -105,12 +109,9 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void deleteAllEpics() {
-        for (Epic epic : epics.values()) {
-            if (!epic.getSubTasksList().isEmpty()) {
-                System.out.println("Ошибка! Невозможно удалить Эпик c id:" + epic.getId() + ", так как у него присутствуют подзадачи");
-            } else {
-                epics.remove(epic.getId());
-            }
+        // Запускаем в цикле удаление Эпиков по одному, так как нужно удалять из истории просмотра
+        for (Integer epicId : epics.keySet()) {
+            deleteEpic(epicId);
         }
     }
 
@@ -121,10 +122,13 @@ public class InMemoryTaskManager implements TaskManager {
             return;
         }
         if (!epics.get(epicId).getSubTasksList().isEmpty()) {
-            System.out.println("Ошибка! Невозможно удалить Эпик с подзадачами");
-            return;
+            List<Integer> subTasksOfEpic = new ArrayList<>(epics.get(epicId).getSubTasksList());
+            for (Integer subTaskId : subTasksOfEpic){
+                deleteSubTask(subTaskId);
+            }
         }
         epics.remove(epicId);
+        historyManager.remove(epicId);
     }
 
     @Override
@@ -186,9 +190,9 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void deleteAllSubTask() {
-        //Запускаем в цикле удаление Подзадач по одной, так как нужно пересчитывать статус Эпика
-        for (SubTask subTask : subTasks.values()) {
-            deleteSubTask(subTask.getId());
+        // Запускаем в цикле удаление Подзадач по одной, так как нужно пересчитывать статус Эпика и удалять из истории просмотра
+        for (Integer subTaskId : subTasks.keySet()) {
+            deleteSubTask(subTaskId);
         }
     }
 
@@ -201,6 +205,7 @@ public class InMemoryTaskManager implements TaskManager {
         epics.get(tempEpicId).deleteSubTask(subTaskId); //Удаляем идентификатор удаляемой Подзадачи из Эпика
         calculateEpicStatus(tempEpicId); //Запускаем перерасчет статуса Эпика у Эпика удаляемой Подзадачи
         subTasks.remove(subTaskId); //Удаляем саму Подзадачу
+        historyManager.remove(subTaskId);
     }
 
     @Override

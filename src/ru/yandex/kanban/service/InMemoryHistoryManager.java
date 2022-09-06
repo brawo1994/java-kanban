@@ -1,23 +1,80 @@
 package ru.yandex.kanban.service;
 
 import ru.yandex.kanban.tasks.Task;
-import java.util.LinkedList;
-import java.util.List;
+
+import java.util.*;
 
 public class InMemoryHistoryManager implements HistoryManager {
-    private final LinkedList<Task> history = new LinkedList<>();
-    private final static int HISTORY_SIZE = 10;
+
+    private final Map<Integer, Node> nodeMap = new HashMap<>();
+    private Node first;
+    private Node last;
 
     @Override
     public void add(Task task) {
-        if (history.size() >= HISTORY_SIZE){
-            history.removeLast();
-        }
-        history.add(0,task);
+        removeNode(task.getId());
+        linkLast(task);
+        nodeMap.put(task.getId(), last);
+    }
+
+    @Override
+    public void remove(int id) {
+        removeNode(id);
     }
 
     @Override
     public List<Task> getHistory() {
-        return history;
+        return getTasks();
+    }
+
+    private void removeNode(Integer id) {
+        Node node = nodeMap.remove(id);
+        if (node == null) {
+            // Задача с переданным ID задачи отсутствует в Истории
+            return;
+        }
+        if (node.prev != null) {
+            // Удаляемая нода не первая
+            node.prev.next = node.next;
+            if (node.next != null){
+                // Удаляемая нода не последняя
+                node.next.prev = node.prev;
+            } else {
+                // Удаляемая нода последняя
+                last = node.prev;
+            }
+        } else {
+            //Удаляемая нода первая
+            first = node.next;
+            if (first == null){
+                // Удаляемая нода единственная
+                last = null;
+            } else {
+                // Удаляемая нода НЕ единственная
+                node.next.prev = null;
+            }
+        }
+    }
+
+    private void linkLast(Task task){
+        Node node = new Node(task, last, null);
+        if (first == null){
+            // Список пустой
+            first = node;
+        } else {
+            // Список НЕ пустой
+            last.next = node;
+        }
+        last = node;
+    }
+
+    private List<Task> getTasks(){
+        List<Task> historyTasksList = new ArrayList<>();
+        Node currentNode = first;
+        while (currentNode != null){
+            historyTasksList.add(currentNode.task);
+            currentNode = currentNode.next;
+        }
+        return historyTasksList;
     }
 }
