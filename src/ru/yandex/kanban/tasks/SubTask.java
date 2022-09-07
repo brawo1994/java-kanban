@@ -1,7 +1,6 @@
 package ru.yandex.kanban.tasks;
 
 import ru.yandex.kanban.model.enums.TaskType;
-import ru.yandex.kanban.model.enums.TaskStatus;
 
 import java.util.Objects;
 
@@ -12,13 +11,6 @@ public class SubTask extends Task{
         super(id, name, description);
         super.type = TaskType.taskType.SUBTASK;
         this.epicId = epicId;
-    }
-
-    //Конструктор для дебага
-    public SubTask(int id, String name, String description, int epicId, TaskStatus.taskStatus status) {
-        super(id, name, description, status);
-        this.epicId = epicId;
-        this.type = TaskType.taskType.TASK;
     }
 
     public int getEpicId() {
@@ -49,5 +41,10 @@ public class SubTask extends Task{
                 (type == otherSubTask.type) &&
                 (status == otherSubTask.status) &&
                 (epicId == otherSubTask.epicId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, description, type, status, epicId);
     }
 }

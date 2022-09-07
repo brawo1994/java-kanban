@@ -1,7 +1,7 @@
 package ru.yandex.kanban.tasks;
 
-import ru.yandex.kanban.model.enums.TaskType;
 import ru.yandex.kanban.model.enums.TaskStatus;
+import ru.yandex.kanban.model.enums.TaskType;
 
 import java.util.Objects;
 
@@ -19,15 +19,6 @@ public class Task {
         this.type = TaskType.taskType.TASK;
         this.status = TaskStatus.taskStatus.NEW;
 
-    }
-
-    //Конструктор для дебага
-    public Task(int id, String name, String description, TaskStatus.taskStatus status) {
-        this.id = id;
-        this.name = name;
-        this.description = description;
-        this.type = TaskType.taskType.TASK;
-        this.status = status;
     }
 
     public int getId() {
@@ -72,5 +63,10 @@ public class Task {
                 Objects.equals(description, otherTask.description) &&
                 (type == otherTask.type) &&
                 (status == otherTask.status);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, description, type, status);
     }
 }
