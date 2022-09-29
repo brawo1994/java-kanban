@@ -1,5 +1,6 @@
 package ru.yandex.kanban.tasks;
 
+import ru.yandex.kanban.model.enums.TaskStatus;
 import ru.yandex.kanban.model.enums.TaskType;
 
 import java.util.ArrayList;
@@ -10,8 +11,15 @@ public class Epic extends Task {
 
     public Epic(int id, String name, String description) {
         super(id, name, description);
-        super.type = TaskType.taskType.EPIC;
-        subTasksList = new ArrayList<>();
+        super.type = TaskType.EPIC;
+        this.subTasksList = new ArrayList<>();
+    }
+
+    public Epic(int id, String name, String description, String status) {
+        super(id, name, description);
+        super.type = TaskType.EPIC;
+        super.status = TaskStatus.valueOf(status);
+        this.subTasksList = new ArrayList<>();
     }
 
     public void addSubTask(Integer subTaskId) {
@@ -24,6 +32,11 @@ public class Epic extends Task {
 
     public ArrayList<Integer> getSubTasksList() {
         return subTasksList;
+    }
+
+    @Override
+    public Integer getEpicId() {
+        return null;
     }
 
     @Override

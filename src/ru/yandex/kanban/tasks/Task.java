@@ -9,16 +9,23 @@ public class Task {
     protected int id;
     protected String name;
     protected String description;
-    protected TaskType.taskType type;
-    protected TaskStatus.taskStatus status;
+    protected TaskType type;
+    protected TaskStatus status;
 
     public Task(int id, String name, String description) {
         this.id = id;
         this.name = name;
         this.description = description;
-        this.type = TaskType.taskType.TASK;
-        this.status = TaskStatus.taskStatus.NEW;
+        this.type = TaskType.TASK;
+        this.status = TaskStatus.NEW;
+    }
 
+    public Task(int id, String name, String description, String status) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.type = TaskType.TASK;
+        this.status = TaskStatus.valueOf(status);
     }
 
     public int getId() {
@@ -33,12 +40,20 @@ public class Task {
         return description;
     }
 
-    public TaskStatus.taskStatus getStatus() {
+    public TaskType getType() {
+        return type;
+    }
+
+    public TaskStatus getStatus() {
         return status;
     }
 
-    public void setStatus(TaskStatus.taskStatus status) {
+    public void setStatus(TaskStatus status) {
         this.status = status;
+    }
+
+    public Integer getEpicId() {
+        return null;
     }
 
     @Override

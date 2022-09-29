@@ -1,5 +1,6 @@
 package ru.yandex.kanban.tasks;
 
+import ru.yandex.kanban.model.enums.TaskStatus;
 import ru.yandex.kanban.model.enums.TaskType;
 
 import java.util.Objects;
@@ -9,11 +10,19 @@ public class SubTask extends Task{
 
     public SubTask(int id, String name, String description, int epicId) {
         super(id, name, description);
-        super.type = TaskType.taskType.SUBTASK;
+        super.type = TaskType.SUBTASK;
         this.epicId = epicId;
     }
 
-    public int getEpicId() {
+    public SubTask(int id, String name, String description, String status, int epicId) {
+        super(id, name, description);
+        super.type = TaskType.SUBTASK;
+        super.status = TaskStatus.valueOf(status);
+        this.epicId = epicId;
+    }
+
+    @Override
+    public Integer getEpicId() {
         return epicId;
     }
 
