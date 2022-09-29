@@ -51,7 +51,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
             }
             tasksManager.lastTaskId = generatorId;
         } catch (IOException e) {
-            throw new ManagerSaveException("Не удалось прочитать из файла" + file.getName(), e);
+            throw new ManagerSaveException("Не удалось прочитать из файла" + file.getName());
         }
         return tasksManager;
     }
@@ -81,7 +81,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
             fileWriter.newLine();
 
         } catch (IOException e){
-            throw new ManagerSaveException("Не удалось записать в файл" + file.getName(), e);
+            throw new ManagerSaveException("Не удалось записать в файл" + file.getName());
         }
     }
 
