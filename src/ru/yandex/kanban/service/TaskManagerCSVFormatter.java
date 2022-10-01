@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TaskManagerCSVFormatter {
+
+    protected final static String CSV_HEADER = "id,type,name,status,description,epic";
     public static String toString(Task task){
         return task.getId() + "," + task.getType() + "," + task.getName() + "," + task.getStatus() + "," + task.getDescription() + "," + task.getEpicId();
     }
@@ -44,9 +46,5 @@ public class TaskManagerCSVFormatter {
             taskIdListResult.add(Integer.parseInt(taskIdInString));
         }
         return taskIdListResult;
-    }
-
-    public static String getHeader(){
-        return "id,type,name,status,description,epic";
     }
 }

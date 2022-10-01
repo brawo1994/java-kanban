@@ -1,5 +1,6 @@
 package ru.yandex.kanban.service;
 
+import ru.yandex.kanban.exception.TaskManagerException;
 import ru.yandex.kanban.model.enums.TaskStatus;
 import ru.yandex.kanban.tasks.Epic;
 import ru.yandex.kanban.tasks.SubTask;
@@ -30,7 +31,7 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public int addNewTask(String name, String description) {
         if (name.isEmpty() || description.isEmpty())
-            throw new RuntimeException("Ошибка! Название или описание пустое");
+            throw new TaskManagerException("Ошибка! Название или описание пустое");
         Task task = new Task(getNewTaskId(), name, description);
         tasks.put(task.getId(), task);
         return task.getId();
@@ -39,7 +40,7 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void updateTask(Task task) {
         if (!tasks.containsKey(task.getId()))
-            throw new RuntimeException("Ошибка! Задача с идентификатором " + task.getId() + " не найдена!");
+            throw new TaskManagerException("Ошибка! Задача с идентификатором " + task.getId() + " не найдена!");
         tasks.put(task.getId(), task);
     }
 
@@ -54,7 +55,7 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void deleteTask(int taskId) {
         if (!tasks.containsKey(taskId))
-            throw new RuntimeException("Ошибка! Задача с идентификатором " + taskId + " не найдена!");
+            throw new TaskManagerException("Ошибка! Задача с идентификатором " + taskId + " не найдена!");
         tasks.remove(taskId);
         historyManager.remove(taskId);
     }
@@ -62,7 +63,7 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public Task getTask(int taskId) {
         if (!tasks.containsKey(taskId))
-            throw new RuntimeException("Ошибка! Задача с идентификатором " + taskId + " не найдена!");
+            throw new TaskManagerException("Ошибка! Задача с идентификатором " + taskId + " не найдена!");
         historyManager.add(tasks.get(taskId));
         return tasks.get(taskId);
     }
@@ -79,7 +80,7 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public int addNewEpic(String name, String description) {
         if (name.isEmpty() || description.isEmpty())
-            throw new RuntimeException("Ошибка! Название или описание пустое");
+            throw new TaskManagerException("Ошибка! Название или описание пустое");
         Epic epic = new Epic(getNewTaskId(), name, description);
         epics.put(epic.getId(), epic);
         return epic.getId();
@@ -88,9 +89,9 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void updateEpic(Epic epic) {
         if (!epics.containsKey(epic.getId()))
-            throw new RuntimeException("Ошибка! Эпик с идентификатором " + epic.getId() + " не найден!");
+            throw new TaskManagerException("Ошибка! Эпик с идентификатором " + epic.getId() + " не найден!");
         if (epics.get(epic.getId()).getStatus() != epic.getStatus())
-            throw new RuntimeException("Ошибка! Самостоятельная смена статуса у Эпика запрещена!");
+            throw new TaskManagerException("Ошибка! Самостоятельная смена статуса у Эпика запрещена!");
         epics.put(epic.getId(), epic);
     }
 
@@ -105,7 +106,7 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void deleteEpic(int epicId) {
         if (!epics.containsKey(epicId))
-            throw new RuntimeException("Ошибка! Эпик с идентификатором " + epicId + " не найден!");
+            throw new TaskManagerException("Ошибка! Эпик с идентификатором " + epicId + " не найден!");
         if (!epics.get(epicId).getSubTasksList().isEmpty()) {
             List<Integer> subTasksOfEpic = new ArrayList<>(epics.get(epicId).getSubTasksList());
             for (Integer subTaskId : subTasksOfEpic){
@@ -117,9 +118,9 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public Epic getEpic(int epicId) throws RuntimeException {
+    public Epic getEpic(int epicId) throws TaskManagerException {
         if (!epics.containsKey(epicId))
-            throw new RuntimeException("Ошибка! Эпик с идентификатором " + epicId + " не найден!");
+            throw new TaskManagerException("Ошибка! Эпик с идентификатором " + epicId + " не найден!");
         Epic epic = epics.get(epicId);
         historyManager.add(epic);
         return epic;
@@ -147,9 +148,9 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public int addNewSubTask(String name, String description, int epicId) {
         if (name.isEmpty() || description.isEmpty())
-            throw new RuntimeException("Ошибка! Название или описание пустое");
+            throw new TaskManagerException("Ошибка! Название или описание пустое");
         if (!epics.containsKey(epicId))
-            throw new RuntimeException("Ошибка! Эпик с идентификатором " + epicId + " не найден!");
+            throw new TaskManagerException("Ошибка! Эпик с идентификатором " + epicId + " не найден!");
         SubTask subTask = new SubTask(getNewTaskId(), name, description, epicId);
         subTasks.put(subTask.getId(), subTask); //Добавляем Подзадачу
         epics.get(epicId).addSubTask(subTask.getId()); //Добавляем идентификатор подзадачи в Эпик, к которому привязываем подзадачу
@@ -162,7 +163,7 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void updateSubTask(SubTask subTask) {
         if (!subTasks.containsKey(subTask.getId()))
-            throw new RuntimeException("Ошибка! Подзадача с идентификатором " + subTask.getId() + "не найдена!");
+            throw new TaskManagerException("Ошибка! Подзадача с идентификатором " + subTask.getId() + "не найдена!");
         TaskStatus oldSubTaskStatus = subTasks.get(subTask.getId()).getStatus();
         subTasks.put(subTask.getId(), subTask);
         if (oldSubTaskStatus != subTask.getStatus()) {
@@ -181,7 +182,7 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void deleteSubTask(int subTaskId) {
         if (!subTasks.containsKey(subTaskId))
-            throw new RuntimeException("Ошибка! Подзадача с идентификатором " + subTaskId + " не найдена!");
+            throw new TaskManagerException("Ошибка! Подзадача с идентификатором " + subTaskId + " не найдена!");
         int tempEpicId = subTasks.get(subTaskId).getEpicId();
         epics.get(tempEpicId).deleteSubTask(subTaskId); //Удаляем идентификатор удаляемой Подзадачи из Эпика
         calculateEpicStatus(tempEpicId); //Запускаем перерасчет статуса Эпика у Эпика удаляемой Подзадачи
@@ -192,7 +193,7 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public SubTask getSubTask(int subTaskId) {
         if (!subTasks.containsKey(subTaskId))
-            throw new RuntimeException("Ошибка! Подзадача с идентификатором " + subTaskId + " не найдена!");
+            throw new TaskManagerException("Ошибка! Подзадача с идентификатором " + subTaskId + " не найдена!");
         historyManager.add(subTasks.get(subTaskId));
         return subTasks.get(subTaskId);
     }
