@@ -14,16 +14,17 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 
-public class FileBackedTasksManager extends InMemoryTaskManager {
+public class FileBackedTasksManager extends InMemoryTasksManager {
 
     private final File file;
+    static final String filePath = "src/ru/yandex/kanban/history.csv";
 
-    public FileBackedTasksManager(File file) {
-        this.file = file;
+    public FileBackedTasksManager() {
+        this.file = new File(filePath);
     }
 
     public static FileBackedTasksManager loadFromFile (File file) {
-        final FileBackedTasksManager tasksManager = new FileBackedTasksManager(file);
+        final FileBackedTasksManager tasksManager = new FileBackedTasksManager();
         try {
             final String csv = Files.readString(Path.of(file.toURI()));
             final String[] lines = csv.split(System.lineSeparator());
