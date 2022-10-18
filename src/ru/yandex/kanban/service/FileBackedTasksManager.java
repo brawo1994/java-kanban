@@ -11,6 +11,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 
@@ -115,8 +116,8 @@ public class FileBackedTasksManager extends InMemoryTasksManager {
 
     // Методы для TASK
     @Override
-    public int addNewTask(String name, String description) {
-        final int id = super.addNewTask(name, description);
+    public int addNewTask(String name, String description, long duration, Instant startTime) {
+        final int id = super.addNewTask(name, description, duration, startTime);
         save();
         return id;
     }
@@ -167,8 +168,8 @@ public class FileBackedTasksManager extends InMemoryTasksManager {
 
     // Методы SUBTASK
     @Override
-    public int addNewSubTask(String name, String description, int epicId) {
-        final int id = super.addNewSubTask(name, description, epicId);
+    public int addNewSubTask(String name, String description, int epicId, long duration, Instant startTime) {
+        final int id = super.addNewSubTask(name, description, epicId, duration, startTime);
         save();
         return id;
     }

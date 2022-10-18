@@ -4,6 +4,7 @@ import ru.yandex.kanban.tasks.Epic;
 import ru.yandex.kanban.tasks.SubTask;
 import ru.yandex.kanban.tasks.Task;
 
+import java.time.Instant;
 import java.util.List;
 
 public interface TaskManager {
@@ -12,7 +13,7 @@ public interface TaskManager {
     List<Task> getHistory();
 
     // Методы для TASK
-    int addNewTask(String name, String description);
+    int addNewTask(String name, String description, long duration, Instant startTime);
 
     void updateTask(Task task);
 
@@ -40,7 +41,7 @@ public interface TaskManager {
     List<SubTask> getAllSubTasksByEpic(int epicId);
 
     // Методы SUBTASK
-    int addNewSubTask(String name, String description, int epicId);
+    int addNewSubTask(String name, String description, int epicId, long duration, Instant startTime);
 
     void updateSubTask(SubTask subTask);
 

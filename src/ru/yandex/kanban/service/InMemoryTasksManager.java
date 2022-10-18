@@ -6,9 +6,8 @@ import ru.yandex.kanban.tasks.Epic;
 import ru.yandex.kanban.tasks.SubTask;
 import ru.yandex.kanban.tasks.Task;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.time.Instant;
+import java.util.*;
 
 public class InMemoryTasksManager implements TaskManager {
     protected int lastTaskId = 0;
@@ -16,6 +15,7 @@ public class InMemoryTasksManager implements TaskManager {
     protected final HashMap<Integer, Epic> epics = new HashMap<>();
     protected final HashMap<Integer, SubTask> subTasks = new HashMap<>();
     protected final HistoryManager historyManager = Managers.getDefaultHistoryManager();
+    protected Set<Task> prioritizedTasks = new TreeSet<>(Comparator.comparing(Task::getStartTime));
 
     protected int getNewTaskId() {
         return ++lastTaskId;
@@ -29,10 +29,11 @@ public class InMemoryTasksManager implements TaskManager {
 
     // Методы для TASK
     @Override
-    public int addNewTask(String name, String description) {
+    public int addNewTask(String name, String description, long duration, Instant startTime) {
         if (name.isEmpty() || description.isEmpty())
             throw new TaskManagerException("Ошибка! Название или описание пустое");
-        Task task = new Task(getNewTaskId(), name, description);
+        Task task = new Task(getNewTaskId(), name, description, duration, startTime);
+        addPrioritizedTask(task);
         tasks.put(task.getId(), task);
         return task.getId();
     }
@@ -41,6 +42,7 @@ public class InMemoryTasksManager implements TaskManager {
     public void updateTask(Task task) {
         if (!tasks.containsKey(task.getId()))
             throw new TaskManagerException("Ошибка! Задача с идентификатором " + task.getId() + " не найдена!");
+        addPrioritizedTask(task);
         tasks.put(task.getId(), task);
     }
 
@@ -56,6 +58,7 @@ public class InMemoryTasksManager implements TaskManager {
     public void deleteTask(int taskId) {
         if (!tasks.containsKey(taskId))
             throw new TaskManagerException("Ошибка! Задача с идентификатором " + taskId + " не найдена!");
+        prioritizedTasks.remove(tasks.get(taskId));
         tasks.remove(taskId);
         historyManager.remove(taskId);
     }
@@ -146,17 +149,16 @@ public class InMemoryTasksManager implements TaskManager {
 
     // Методы SUBTASK
     @Override
-    public int addNewSubTask(String name, String description, int epicId) {
+    public int addNewSubTask(String name, String description, int epicId, long duration, Instant startTime) {
         if (name.isEmpty() || description.isEmpty())
             throw new TaskManagerException("Ошибка! Название или описание пустое");
         if (!epics.containsKey(epicId))
             throw new TaskManagerException("Ошибка! Эпик с идентификатором " + epicId + " не найден!");
-        SubTask subTask = new SubTask(getNewTaskId(), name, description, epicId);
+        SubTask subTask = new SubTask(getNewTaskId(), name, description, epicId, duration, startTime);
+        addPrioritizedTask(subTask);
         subTasks.put(subTask.getId(), subTask); //Добавляем Подзадачу
         epics.get(epicId).addSubTask(subTask.getId()); //Добавляем идентификатор подзадачи в Эпик, к которому привязываем подзадачу
-        if (epics.get(epicId).getStatus() == TaskStatus.DONE) {
-            calculateEpicStatus(epicId); //Если статус Эпика DONE, то нужно запустить перерасчет статуса Эпика
-        }
+        epics.get(epicId).calculateEpicStatusAndDuration(subTasks);
         return subTask.getId();
     }
 
@@ -165,10 +167,9 @@ public class InMemoryTasksManager implements TaskManager {
         if (!subTasks.containsKey(subTask.getId()))
             throw new TaskManagerException("Ошибка! Подзадача с идентификатором " + subTask.getId() + "не найдена!");
         TaskStatus oldSubTaskStatus = subTasks.get(subTask.getId()).getStatus();
+        addPrioritizedTask(subTask);
         subTasks.put(subTask.getId(), subTask);
-        if (oldSubTaskStatus != subTask.getStatus()) {
-            calculateEpicStatus(subTask.getEpicId()); //Если статус Подзадачи изменился, то нужно запустить перерасчет статуса Эпика
-        }
+        epics.get(subTask.getEpicId()).calculateEpicStatusAndDuration(subTasks);
     }
 
     @Override
@@ -185,7 +186,8 @@ public class InMemoryTasksManager implements TaskManager {
             throw new TaskManagerException("Ошибка! Подзадача с идентификатором " + subTaskId + " не найдена!");
         int tempEpicId = subTasks.get(subTaskId).getEpicId();
         epics.get(tempEpicId).deleteSubTask(subTaskId); //Удаляем идентификатор удаляемой Подзадачи из Эпика
-        calculateEpicStatus(tempEpicId); //Запускаем перерасчет статуса Эпика у Эпика удаляемой Подзадачи
+        epics.get(tempEpicId).calculateEpicStatusAndDuration(subTasks); //Запускаем перерасчет статуса Эпика у Эпика удаляемой Подзадачи
+        prioritizedTasks.remove(subTasks.get(subTaskId));
         subTasks.remove(subTaskId); //Удаляем саму Подзадачу
         historyManager.remove(subTaskId);
     }
@@ -206,30 +208,23 @@ public class InMemoryTasksManager implements TaskManager {
         return new ArrayList<>(subTasks.values());
     }
 
-    protected void calculateEpicStatus(int epicId) {
-        HashMap<TaskStatus, Integer> subTasksStatus = new HashMap<>();
-        subTasksStatus.put(TaskStatus.NEW, 0);
-        subTasksStatus.put(TaskStatus.IN_PROGRESS, 0);
-        subTasksStatus.put(TaskStatus.DONE, 0);
-        int subTasksCountInEpic = epics.get(epicId).getSubTasksList().size();
-        for (Integer subTaskId : epics.get(epicId).getSubTasksList()) {
-            SubTask subTask = subTasks.get(subTaskId);
-            int tempCount = 0;
-            if (subTasksStatus.containsKey(subTask.getStatus())) {
-                tempCount = subTasksStatus.get(subTask.getStatus());
+    private void addPrioritizedTask(Task task) {
+        prioritizedTasks.add(task);
+        validateTaskPriority();
+    }
+
+    private void validateTaskPriority() {
+        List<Task> tasks = getPrioritizedTasks();
+        for (int i = 1; i < tasks.size(); i++) {
+            Task currentTask = tasks.get(i);
+            Task prevTask = tasks.get(i - 1);
+            if (currentTask.getStartTime().isBefore(prevTask.getEndTime())) {
+                throw new TaskManagerException("Задачи с номерами " + currentTask.getId() + " и " + prevTask.getId() + " пересекаются по времени выполнения");
             }
-            subTasksStatus.put(subTask.getStatus(), ++tempCount);
         }
-        if (subTasksCountInEpic == 0 || subTasksCountInEpic == subTasksStatus.get(TaskStatus.NEW)) {
-            epics.get(epicId).setStatus(TaskStatus.NEW);
-            return;
-        }
-        if (subTasksCountInEpic == subTasksStatus.get(TaskStatus.DONE)) {
-            epics.get(epicId).setStatus(TaskStatus.DONE);
-            return;
-        }
-        if (epics.get(epicId).getStatus() != TaskStatus.IN_PROGRESS) {
-            epics.get(epicId).setStatus(TaskStatus.IN_PROGRESS);
-        }
+    }
+
+    private List<Task> getPrioritizedTasks() {
+        return new ArrayList<>(prioritizedTasks);
     }
 }

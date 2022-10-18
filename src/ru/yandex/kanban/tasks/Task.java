@@ -3,6 +3,7 @@ package ru.yandex.kanban.tasks;
 import ru.yandex.kanban.model.enums.TaskStatus;
 import ru.yandex.kanban.model.enums.TaskType;
 
+import java.time.Instant;
 import java.util.Objects;
 
 public class Task {
@@ -11,21 +12,27 @@ public class Task {
     protected String description;
     protected TaskType type;
     protected TaskStatus status;
+    protected long duration;
+    protected Instant startTime;
 
-    public Task(int id, String name, String description) {
+    public Task(int id, String name, String description, long duration, Instant startTime) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.type = TaskType.TASK;
         this.status = TaskStatus.NEW;
+        this.duration = duration;
+        this.startTime = startTime;
     }
 
-    public Task(int id, String name, String description, String status) {
+    public Task(int id, String name, String description, String status, long duration, Instant startTime) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.type = TaskType.TASK;
         this.status = TaskStatus.valueOf(status);
+        this.duration = duration;
+        this.startTime = startTime;
     }
 
     public int getId() {
@@ -56,6 +63,19 @@ public class Task {
         return null;
     }
 
+    public Instant getStartTime() {
+        return startTime;
+    }
+
+    public long getDuration() {
+        return duration;
+    }
+
+    public Instant getEndTime() {
+        final long SECONDS_IN_MINUTE = 60L;
+        return startTime.plusSeconds(duration * SECONDS_IN_MINUTE);
+    }
+
     @Override
     public String toString() {
         return "\nTask{" +
@@ -64,6 +84,8 @@ public class Task {
                 ", description='" + description + '\'' +
                 ", type=" + type +
                 ", status=" + status +
+                ", startTime=" + startTime.toEpochMilli() +
+                ", duration=" + duration +
                 '}';
     }
 
@@ -77,11 +99,13 @@ public class Task {
                 Objects.equals(name, otherTask.name) &&
                 Objects.equals(description, otherTask.description) &&
                 (type == otherTask.type) &&
-                (status == otherTask.status);
+                (status == otherTask.status) &&
+                Objects.equals(startTime, otherTask.startTime) &&
+                (duration == otherTask.duration);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, description, type, status);
+        return Objects.hash(id, name, description, type, status, duration, startTime);
     }
 }
