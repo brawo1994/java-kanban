@@ -1,7 +1,6 @@
 package ru.yandex.kanban.service;
 
 import ru.yandex.kanban.exception.TaskManagerException;
-import ru.yandex.kanban.model.enums.TaskStatus;
 import ru.yandex.kanban.tasks.Epic;
 import ru.yandex.kanban.tasks.SubTask;
 import ru.yandex.kanban.tasks.Task;
@@ -166,7 +165,6 @@ public class InMemoryTasksManager implements TaskManager {
     public void updateSubTask(SubTask subTask) {
         if (!subTasks.containsKey(subTask.getId()))
             throw new TaskManagerException("Ошибка! Подзадача с идентификатором " + subTask.getId() + "не найдена!");
-        TaskStatus oldSubTaskStatus = subTasks.get(subTask.getId()).getStatus();
         addPrioritizedTask(subTask);
         subTasks.put(subTask.getId(), subTask);
         epics.get(subTask.getEpicId()).calculateEpicStatusAndDuration(subTasks);

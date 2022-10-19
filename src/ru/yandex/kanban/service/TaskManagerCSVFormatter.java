@@ -10,7 +10,7 @@ import java.util.List;
 
 public class TaskManagerCSVFormatter {
 
-    protected final static String CSV_HEADER = "id,type,name,status,description,duration,startTime,epic";
+    protected static final String CSV_HEADER = "id,type,name,status,description,duration,startTime,epic";
     public static String toString(Task task){
         return task.getId() + "," + task.getType() + "," + task.getName() + "," + task.getStatus() + "," + task.getDescription()+ "," + task.getDuration()+ "," + task.getStartTime() + "," + task.getEpicId();
     }
