@@ -1,4 +1,4 @@
-package ru.yandex.kanban.service;
+package ru.yandex.kanban.service.managers.historyManagers;
 
 import ru.yandex.kanban.tasks.Task;
 

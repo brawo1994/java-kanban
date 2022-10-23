@@ -3,6 +3,7 @@ package ru.yandex.kanban.service;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import ru.yandex.kanban.service.managers.historyManagers.InMemoryHistoryManager;
 import ru.yandex.kanban.tasks.Task;
 
 import java.time.Instant;

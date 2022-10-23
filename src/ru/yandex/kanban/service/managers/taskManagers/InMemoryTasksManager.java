@@ -1,6 +1,8 @@
-package ru.yandex.kanban.service;
+package ru.yandex.kanban.service.managers.taskManagers;
 
 import ru.yandex.kanban.exception.TaskManagerException;
+import ru.yandex.kanban.service.managers.Managers;
+import ru.yandex.kanban.service.managers.historyManagers.HistoryManager;
 import ru.yandex.kanban.tasks.Epic;
 import ru.yandex.kanban.tasks.SubTask;
 import ru.yandex.kanban.tasks.Task;
@@ -32,6 +34,13 @@ public class InMemoryTasksManager implements TaskManager {
         if (name.isEmpty() || description.isEmpty())
             throw new TaskManagerException("Ошибка! Название или описание пустое");
         Task task = new Task(getNewTaskId(), name, description, duration, startTime);
+        addPrioritizedTask(task);
+        tasks.put(task.getId(), task);
+        return task.getId();
+    }
+
+    @Override
+    public int addNewTask(Task task) {
         addPrioritizedTask(task);
         tasks.put(task.getId(), task);
         return task.getId();
@@ -84,6 +93,12 @@ public class InMemoryTasksManager implements TaskManager {
         if (name.isEmpty() || description.isEmpty())
             throw new TaskManagerException("Ошибка! Название или описание пустое");
         Epic epic = new Epic(getNewTaskId(), name, description);
+        epics.put(epic.getId(), epic);
+        return epic.getId();
+    }
+
+    @Override
+    public int addNewEpic(Epic epic) {
         epics.put(epic.getId(), epic);
         return epic.getId();
     }
@@ -162,6 +177,15 @@ public class InMemoryTasksManager implements TaskManager {
     }
 
     @Override
+    public int addNewSubTask(SubTask subTask) {
+        addPrioritizedTask(subTask);
+        subTasks.put(subTask.getId(), subTask); //Добавляем Подзадачу
+        epics.get(subTask.getEpicId()).addSubTask(subTask.getId()); //Добавляем идентификатор подзадачи в Эпик, к которому привязываем подзадачу
+        epics.get(subTask.getEpicId()).calculateEpicStatusAndDuration(subTasks);
+        return subTask.getId();
+    }
+
+    @Override
     public void updateSubTask(SubTask subTask) {
         if (!subTasks.containsKey(subTask.getId()))
             throw new TaskManagerException("Ошибка! Подзадача с идентификатором " + subTask.getId() + "не найдена!");
@@ -222,7 +246,7 @@ public class InMemoryTasksManager implements TaskManager {
         }
     }
 
-    private List<Task> getPrioritizedTasks() {
+    public List<Task> getPrioritizedTasks() {
         return new ArrayList<>(prioritizedTasks);
     }
 }

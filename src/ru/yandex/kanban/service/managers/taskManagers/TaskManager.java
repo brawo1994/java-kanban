@@ -1,4 +1,4 @@
-package ru.yandex.kanban.service;
+package ru.yandex.kanban.service.managers.taskManagers;
 
 import ru.yandex.kanban.tasks.Epic;
 import ru.yandex.kanban.tasks.SubTask;
@@ -15,6 +15,8 @@ public interface TaskManager {
     // Методы для TASK
     int addNewTask(String name, String description, long duration, Instant startTime);
 
+    int addNewTask(Task task);
+
     void updateTask(Task task);
 
     void deleteAllTasks();
@@ -27,6 +29,8 @@ public interface TaskManager {
 
     // Методы EPIC
     int addNewEpic(String name, String description);
+
+    int addNewEpic(Epic epic);
 
     void updateEpic(Epic epic);
 
@@ -43,6 +47,8 @@ public interface TaskManager {
     // Методы SUBTASK
     int addNewSubTask(String name, String description, int epicId, long duration, Instant startTime);
 
+    int addNewSubTask(SubTask subTask);
+
     void updateSubTask(SubTask subTask);
 
     void deleteAllSubTask();
@@ -52,4 +58,6 @@ public interface TaskManager {
     SubTask getSubTask(int subTaskId);
 
     List<SubTask> getAllSubTasks();
+
+    List<Task> getPrioritizedTasks();
 }

@@ -1,4 +1,4 @@
-package ru.yandex.kanban.service;
+package ru.yandex.kanban.service.managers.taskManagers;
 
 import ru.yandex.kanban.exception.ManagerSaveException;
 import ru.yandex.kanban.tasks.Epic;
@@ -24,7 +24,7 @@ public class FileBackedTasksManager extends InMemoryTasksManager {
         this.file = new File(filePath);
     }
 
-    public static FileBackedTasksManager loadFromFile (File file) {
+    public static FileBackedTasksManager loadFromFile(File file) {
         final FileBackedTasksManager tasksManager = new FileBackedTasksManager();
         try {
             final String csv = Files.readString(Path.of(file.toURI()));
@@ -42,11 +42,7 @@ public class FileBackedTasksManager extends InMemoryTasksManager {
                 if (id > generatorId){
                     generatorId = id;
                 }
-                tasksManager.addTask(task);
-            }
-            for (SubTask subTask : tasksManager.subTasks.values()){
-                final int id = subTask.getId();
-                tasksManager.getEpic(subTask.getEpicId()).addSubTask(id);
+                tasksManager.restoreTaskFromFile(task);
             }
             for (Integer taskId : history){
                 tasksManager.historyManager.add(tasksManager.findTask(taskId));
@@ -58,7 +54,7 @@ public class FileBackedTasksManager extends InMemoryTasksManager {
         return tasksManager;
     }
 
-    private void save() throws ManagerSaveException {
+    protected void save() throws ManagerSaveException {
         try (BufferedWriter fileWriter = new BufferedWriter(new FileWriter(file))){
             fileWriter.write(TaskManagerCSVFormatter.CSV_HEADER);
             fileWriter.newLine();
@@ -87,17 +83,16 @@ public class FileBackedTasksManager extends InMemoryTasksManager {
         }
     }
 
-    protected void addTask(Task task){
-        final int id = task.getId();
+    protected void restoreTaskFromFile(Task task){
         switch (task.getType()){
             case TASK :
-                tasks.put(id, task);
+                restoreTask(task);
                 break;
             case SUBTASK:
-                subTasks.put(id, (SubTask) task);
+                restoreSubTask((SubTask) task);
                 break;
             case EPIC:
-                epics.put(id, (Epic) task);
+                restoreEpic((Epic) task);
                 break;
         }
     }
@@ -123,6 +118,13 @@ public class FileBackedTasksManager extends InMemoryTasksManager {
     }
 
     @Override
+    public int addNewTask(Task task) {
+        super.addNewTask(task);
+        save();
+        return task.getId();
+    }
+
+    @Override
     public void updateTask(Task task) {
         super.updateTask(task);
         save();
@@ -140,12 +142,23 @@ public class FileBackedTasksManager extends InMemoryTasksManager {
         save();
     }
 
+    public void restoreTask(Task task) {
+        super.addNewTask(task);
+    }
+
     // Методы EPIC
     @Override
     public int addNewEpic(String name, String description) {
         final int id = super.addNewEpic(name, description);
         save();
         return id;
+    }
+
+    @Override
+    public int addNewEpic(Epic epic) {
+        super.addNewEpic(epic);
+        save();
+        return epic.getEpicId();
     }
 
     @Override
@@ -166,12 +179,23 @@ public class FileBackedTasksManager extends InMemoryTasksManager {
         save();
     }
 
+    public void restoreEpic(Epic epic) {
+        super.addNewEpic(epic);
+    }
+
     // Методы SUBTASK
     @Override
     public int addNewSubTask(String name, String description, int epicId, long duration, Instant startTime) {
         final int id = super.addNewSubTask(name, description, epicId, duration, startTime);
         save();
         return id;
+    }
+
+    @Override
+    public int addNewSubTask(SubTask subTask) {
+        super.addNewSubTask(subTask);
+        save();
+        return subTask.getId();
     }
 
     @Override
@@ -239,5 +263,9 @@ public class FileBackedTasksManager extends InMemoryTasksManager {
         final List<SubTask> subTasks = super.getAllSubTasks();
         save();
         return subTasks;
+    }
+
+    public void restoreSubTask(SubTask subTask) {
+        super.addNewSubTask(subTask);
     }
 }

@@ -1,16 +1,26 @@
 package ru.yandex.kanban;
 
-import ru.yandex.kanban.service.FileBackedTasksManager;
-import ru.yandex.kanban.service.Managers;
-import ru.yandex.kanban.service.TaskManager;
+import ru.yandex.kanban.service.managers.Managers;
+import ru.yandex.kanban.service.managers.taskManagers.HTTPTaskManager;
+import ru.yandex.kanban.service.managers.taskManagers.TaskManager;
+import ru.yandex.kanban.service.servers.HttpTaskServer;
+import ru.yandex.kanban.service.servers.KVServer;
+import ru.yandex.kanban.tasks.Epic;
+import ru.yandex.kanban.tasks.SubTask;
+import ru.yandex.kanban.tasks.Task;
 
-import java.io.File;
+import java.io.IOException;
 import java.time.Instant;
+import java.util.List;
 
 public class Main {
 
-    public static void main(String[] args) {
-        TaskManager taskManager = Managers.getDefaultBackedTasksManager();
+    public static void main(String[] args) throws IOException {
+        new KVServer().start();
+
+        TaskManager taskManager = Managers.getDefaultHTTPTaskManager();
+        new HttpTaskServer(taskManager).start();
+
         taskManager.addNewTask("Задача 1", "Описание задачи 1", 0, Instant.now());
         taskManager.addNewTask("Задача 2", "Описание задачи 2", 0, Instant.now());
         int epicId1 = taskManager.addNewEpic("Эпик 1", "Описание эпика 1");
@@ -19,38 +29,57 @@ public class Main {
         taskManager.addNewSubTask("Подзадача 2", "Описание подзадачи 2", epicId1, 0, Instant.now());
         taskManager.addNewSubTask("Подзадача 3", "Описание подзадачи 3", epicId2, 0, Instant.now());
 
-        System.out.println(taskManager.getAllSubTasks());
-        System.out.println(taskManager.getAllEpics());
-        System.out.println(taskManager.getAllTasks());
+        List<Task> tasks1 = taskManager.getAllTasks();
+        List<SubTask> subTasks1 = taskManager.getAllSubTasks();
+        List<Epic> epics1 = taskManager.getAllEpics();
+        List<Task> history1 = taskManager.getHistory();
+        List<Task> prioritizedTasks1 = taskManager.getPrioritizedTasks();
+        System.out.println(history1);
+        System.out.println(tasks1);
+        System.out.println(subTasks1);
+        System.out.println(epics1);
+        System.out.println(prioritizedTasks1);
         System.out.println();
-        System.out.println("Список просмотров задач:");
-        System.out.println(taskManager.getHistory());
         System.out.println();
-        TaskManager taskManager2 = FileBackedTasksManager.loadFromFile(new File("src/ru/yandex/kanban/history.csv"));
-        System.out.println("Создал taskManager, восстановленный из файла");
+        HTTPTaskManager taskManager2 = new HTTPTaskManager();
+        taskManager2.load();
+        System.out.println("Создал HTTPTaskManager, восстановленный из KV");
 
-        if (taskManager.getHistory().equals(taskManager2.getHistory())){
+        List<Task> history2 = taskManager2.getHistory();
+        List<Task> tasks2 = taskManager2.getAllTasks();
+        List<SubTask> subTasks2 = taskManager2.getAllSubTasks();
+        List<Epic> epics2 = taskManager2.getAllEpics();
+        List<Task> prioritizedTasks2 = taskManager2.getPrioritizedTasks();
+        System.out.println(history2);
+        System.out.println(tasks2);
+        System.out.println(subTasks2);
+        System.out.println(epics2);
+        System.out.println(prioritizedTasks2);
+
+        if (history1.equals(history2)){
             System.out.println("Истории просмотров двух taskManagers равны");
         } else {
             System.out.println("Истории просмотров двух taskManagers НЕ равны");
         }
-
-        if (taskManager.getAllSubTasks().equals(taskManager2.getAllSubTasks())){
+        if (tasks1.equals(tasks2)){
             System.out.println("Списки задач в двух taskManagers одинаковы");
         } else {
             System.out.println("Списки задач в двух taskManagers разные");
         }
-
-        if (taskManager.getAllEpics().equals(taskManager2.getAllEpics())){
+        if (subTasks1.equals(subTasks2)){
+            System.out.println("Списки подзадач в двух taskManagers одинаковы");
+        } else {
+            System.out.println("Списки подзадач в двух taskManagers разные");
+        }
+        if (epics1.equals(epics2)){
             System.out.println("Списки эпиков в двух taskManagers одинаковы");
         } else {
             System.out.println("Списки эпиков в двух taskManagers разные");
         }
-
-        if (taskManager.getAllTasks().equals(taskManager2.getAllTasks())){
-            System.out.println("Списки подзадач в двух taskManagers одинаковы");
+        if (prioritizedTasks1.equals(prioritizedTasks2)){
+            System.out.println("Списки задач по приоритету в двух taskManagers одинаковые");
         } else {
-            System.out.println("Списки подзадач в двух taskManagers разные");
+            System.out.println("Списки задач по приоритету в двух taskManagers разные");
         }
     }
 }

@@ -2,6 +2,7 @@ package ru.yandex.kanban.service;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import ru.yandex.kanban.service.managers.taskManagers.FileBackedTasksManager;
 import ru.yandex.kanban.tasks.Epic;
 import ru.yandex.kanban.tasks.SubTask;
 import ru.yandex.kanban.tasks.Task;
@@ -22,16 +23,16 @@ public class FileBackedTasksManagerTest extends TaskManagerTest<FileBackedTasksM
     void loadedFromFileTasksManager() {
         final String filePath = "src/ru/yandex/kanban/history.csv";
         final File file = new File(filePath);
-        Task task1 = createTask();
-        Task task2 = createTask();
+        createTask();
+        Task task = createTask();
         Epic epic1 = createEpic();
         Epic epic2 = createEpic();
-        SubTask subTask1 = createSubTask(epic1);
-        SubTask subTask2 = createSubTask(epic1);
-        SubTask subTask3 = createSubTask(epic2);
-        SubTask subTask4 = createSubTask(epic2);
-        taskManager.getTask(task2.getId());
-        taskManager.getSubTask(subTask4.getId());
+        createSubTask(epic1);
+        createSubTask(epic1);
+        createSubTask(epic2);
+        SubTask subTask = createSubTask(epic2);
+        taskManager.getTask(task.getId());
+        taskManager.getSubTask(subTask.getId());
         taskManager.getEpic(epic1.getId());
         List<Task> history = taskManager.getHistory();
 

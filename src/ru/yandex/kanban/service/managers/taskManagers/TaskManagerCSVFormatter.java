@@ -1,5 +1,6 @@
-package ru.yandex.kanban.service;
+package ru.yandex.kanban.service.managers.taskManagers;
 
+import ru.yandex.kanban.service.managers.historyManagers.HistoryManager;
 import ru.yandex.kanban.tasks.Epic;
 import ru.yandex.kanban.tasks.SubTask;
 import ru.yandex.kanban.tasks.Task;
