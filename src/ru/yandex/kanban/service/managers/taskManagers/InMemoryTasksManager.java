@@ -236,10 +236,10 @@ public class InMemoryTasksManager implements TaskManager {
     }
 
     private void validateTaskPriority() {
-        List<Task> tasks = getPrioritizedTasks();
-        for (int i = 1; i < tasks.size(); i++) {
-            Task currentTask = tasks.get(i);
-            Task prevTask = tasks.get(i - 1);
+        List<Task> prioritizedTasksList = getPrioritizedTasks();
+        for (int i = 1; i < prioritizedTasksList.size(); i++) {
+            Task currentTask = prioritizedTasksList.get(i);
+            Task prevTask = prioritizedTasksList.get(i - 1);
             if (currentTask.getStartTime().isBefore(prevTask.getEndTime())) {
                 throw new TaskManagerException("Задачи с номерами " + currentTask.getId() + " и " + prevTask.getId() + " пересекаются по времени выполнения");
             }

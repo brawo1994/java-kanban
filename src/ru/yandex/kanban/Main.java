@@ -18,7 +18,7 @@ public class Main {
     public static void main(String[] args) throws IOException {
         new KVServer().start();
 
-        TaskManager taskManager = Managers.getDefaultHTTPTaskManager();
+        TaskManager taskManager = Managers.getDefaultTasksManager();
         new HttpTaskServer(taskManager).start();
 
         taskManager.addNewTask("Задача 1", "Описание задачи 1", 0, Instant.now());

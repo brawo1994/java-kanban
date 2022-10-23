@@ -54,8 +54,8 @@ public class Epic extends Task {
         subTasksStatus.put(TaskStatus.NEW, 0);
         subTasksStatus.put(TaskStatus.IN_PROGRESS, 0);
         subTasksStatus.put(TaskStatus.DONE, 0);
-        Instant startTime = Instant.MAX;
-        Instant endTime = Instant.MIN;
+        Instant epicStartTime = Instant.MAX;
+        Instant epicEndTime = Instant.MIN;
         int subTasksCountInEpic = this.subTasksList.size();
         for (Integer subTaskId : this.subTasksList) {
             SubTask subTask = subTasks.get(subTaskId);
@@ -64,18 +64,18 @@ public class Epic extends Task {
                 tempCount = subTasksStatus.get(subTask.getStatus());
             }
             subTasksStatus.put(subTask.getStatus(), ++tempCount);
-            if (subTask.getStartTime().isBefore(startTime))
-                startTime = subTask.getStartTime();
-            if (subTask.getEndTime().isAfter(endTime))
-                endTime = subTask.getEndTime();
+            if (subTask.getStartTime().isBefore(epicStartTime))
+                epicStartTime = subTask.getStartTime();
+            if (subTask.getEndTime().isAfter(epicEndTime))
+                epicEndTime = subTask.getEndTime();
         }
-        this.startTime = startTime;
-        this.endTime = endTime;
+        this.startTime = epicStartTime;
+        this.endTime = epicEndTime;
         final long MILLISECONDS_IN_MINUTE = 60000L;
         if (subTasksCountInEpic == 0){
             this.duration = 0;
         } else {
-            this.duration = (startTime.toEpochMilli() - endTime.toEpochMilli()) / MILLISECONDS_IN_MINUTE;
+            this.duration = (epicStartTime.toEpochMilli() - epicEndTime.toEpochMilli()) / MILLISECONDS_IN_MINUTE;
         }
         if (subTasksCountInEpic == 0 || subTasksCountInEpic == subTasksStatus.get(TaskStatus.NEW)) {
             this.status = TaskStatus.NEW;

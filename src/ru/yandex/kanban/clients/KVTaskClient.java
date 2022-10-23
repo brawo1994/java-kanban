@@ -30,9 +30,11 @@ public class KVTaskClient {
         try {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() == 200) {
-                return apiToken = response.body();
+                apiToken = response.body();
+                return apiToken;
             } else System.out.println("Не удалось получить API_TOKEN");
         } catch (IOException | InterruptedException e) {
+            Thread.currentThread().interrupt();
             System.out.println("Во время выполнения запроса возникла ошибка. Проверьте адрес!");
         }
         return "wrong API_TOKEN";
@@ -50,7 +52,7 @@ public class KVTaskClient {
                 .POST(HttpRequest.BodyPublishers.ofString(json, DEFAULT_CHARSET))
                 .build();
         try {
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            client.send(request, HttpResponse.BodyHandlers.ofString());
         } catch (IOException | InterruptedException e) {
             System.out.println("Во время выполнения запроса возникла ошибка. Проверьте адрес!");
         }

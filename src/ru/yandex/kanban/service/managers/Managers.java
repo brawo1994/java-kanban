@@ -9,14 +9,12 @@ import ru.yandex.kanban.service.managers.taskManagers.TaskManager;
 
 public class Managers {
     public static TaskManager getDefaultTasksManager() {
-        return new InMemoryTasksManager();
+        return new HTTPTaskManager();
     }
 
     public static TaskManager getDefaultBackedTasksManager() {
         return new FileBackedTasksManager();
     }
-
-    public static TaskManager getDefaultHTTPTaskManager() { return new HTTPTaskManager(); }
 
     public static HistoryManager getDefaultHistoryManager() {
         return new InMemoryHistoryManager();

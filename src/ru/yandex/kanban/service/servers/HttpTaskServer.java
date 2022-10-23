@@ -22,11 +22,10 @@ public class HttpTaskServer {
     private static final int PORT = 8080;
     private final TaskManager taskManager;
     private final HttpServer server;
-    private static Gson gson;
+    private static final Gson gson = new Gson();
 
     public HttpTaskServer(TaskManager taskManager) throws IOException {
         this.taskManager = taskManager;
-        gson = new Gson();
         server = HttpServer.create(new InetSocketAddress(PORT), 0);
         server.createContext("/tasks", new TasksHandler());
     }
@@ -57,26 +56,17 @@ public class HttpTaskServer {
                         if (Pattern.matches("^/tasks$", path)) {
                             response = gson.toJson(taskManager.getPrioritizedTasks());
                             responseCode = 200;
-                        } else if (Pattern.matches("^/tasks/task$", path) && query != null) {
-                            response = gson.toJson(taskManager.getTask(getTaskIdFromQuery(query)));
-                            responseCode = 200;
                         } else if (Pattern.matches("^/tasks/task$", path)) {
-                            response = gson.toJson(taskManager.getAllTasks());
+                            response = getTask(query);
                             responseCode = 200;
                         } else if (Pattern.matches("^/tasks/subtask/epic$", path) && query != null) {
                             response = gson.toJson(taskManager.getAllSubTasksByEpic(getTaskIdFromQuery(query)));
                             responseCode = 200;
-                        } else if (Pattern.matches("^/tasks/epic$", path) && query != null) {
-                            response = gson.toJson(taskManager.getEpic(getTaskIdFromQuery(query)));
-                            responseCode = 200;
                         } else if (Pattern.matches("^/tasks/epic$", path)) {
-                            response = gson.toJson(taskManager.getAllEpics());
-                            responseCode = 200;
-                        } else if (Pattern.matches("^/tasks/subtask$", path) && query != null) {
-                            response = gson.toJson(taskManager.getSubTask(getTaskIdFromQuery(query)));
+                            response = getEpic(query);
                             responseCode = 200;
                         } else if (Pattern.matches("^/tasks/subtask$", path)) {
-                            response = gson.toJson(taskManager.getAllSubTasks());
+                            response = getSubTask(query);
                             responseCode = 200;
                         } else if (Pattern.matches("^/tasks/history$", path)) {
                             response = gson.toJson(taskManager.getHistory());
@@ -86,24 +76,15 @@ public class HttpTaskServer {
 
                     case "POST":
                         if (Pattern.matches("^/tasks/task$", path)){
-                            InputStream inputStream = httpExchange.getRequestBody();
-                            String taskBody = new String(inputStream.readAllBytes(), DEFAULT_CHARSET);
-                            Task task = gson.fromJson(taskBody, Task.class);
-                            taskManager.addNewTask(task);
+                            addTask(httpExchange.getRequestBody());
                             responseCode = 201;
                         }
                         if (Pattern.matches("^/tasks/epic$", path)){
-                            InputStream inputStream = httpExchange.getRequestBody();
-                            String taskBody = new String(inputStream.readAllBytes(), DEFAULT_CHARSET);
-                            Epic epic = gson.fromJson(taskBody, Epic.class);
-                            taskManager.addNewEpic(epic);
+                            addEpic(httpExchange.getRequestBody());
                             responseCode = 201;
                         }
                         if (Pattern.matches("^/tasks/subtask$", path)){
-                            InputStream inputStream = httpExchange.getRequestBody();
-                            String taskBody = new String(inputStream.readAllBytes(), DEFAULT_CHARSET);
-                            SubTask subTask = gson.fromJson(taskBody, SubTask.class);
-                            taskManager.addNewSubTask(subTask);
+                            addSubTask(httpExchange.getRequestBody());
                             responseCode = 201;
                         } else {
                             System.out.println("Метод " + method + ", но path не распознан " + path);
@@ -111,26 +92,14 @@ public class HttpTaskServer {
                         break;
 
                     case "DELETE":
-                        if (Pattern.matches("^/tasks/task$", path) && query != null) {
-                            int id = getTaskIdFromQuery(query);
-                            taskManager.deleteTask(id);
-                            responseCode = 200;
-                        } else if (Pattern.matches("^/tasks/task$", path)) {
-                            taskManager.deleteAllTasks();
-                            responseCode = 200;
-                        } else if (Pattern.matches("^/tasks/epic$", path) && query != null) {
-                            int id = getTaskIdFromQuery(query);
-                            taskManager.deleteEpic(id);
+                        if (Pattern.matches("^/tasks/task$", path)) {
+                            deleteTask(query);
                             responseCode = 200;
                         } else if (Pattern.matches("^/tasks/epic$", path)) {
-                            taskManager.deleteAllEpics();
-                            responseCode = 200;
-                        } else if (Pattern.matches("^/tasks/subtask$", path) && query != null) {
-                            int id = getTaskIdFromQuery(query);
-                            taskManager.deleteSubTask(id);
+                            deleteEpic(query);
                             responseCode = 200;
                         } else if (Pattern.matches("^/tasks/subtask$", path)) {
-                            taskManager.deleteAllSubTask();
+                            deleteSubTask(query);
                             responseCode = 200;
                         }
                         break;
@@ -153,5 +122,71 @@ public class HttpTaskServer {
     private static int getTaskIdFromQuery(String query) {
         String[] queryArray = query.split("=");
         return Integer.parseInt(queryArray[1]);
+    }
+
+    private String getTask(String query){
+        if (query == null){
+            return gson.toJson(taskManager.getAllTasks());
+        } else {
+            return gson.toJson(taskManager.getTask(getTaskIdFromQuery(query)));
+        }
+    }
+
+    private String getEpic(String query){
+        if (query == null){
+            return gson.toJson(taskManager.getAllEpics());
+        } else {
+            return gson.toJson(taskManager.getEpic(getTaskIdFromQuery(query)));
+        }
+    }
+
+    private String getSubTask(String query){
+        if (query == null){
+            return gson.toJson(taskManager.getAllSubTasks());
+        } else {
+            return gson.toJson(taskManager.getSubTask(getTaskIdFromQuery(query)));
+        }
+    }
+
+    private void addTask(InputStream inputStream) throws IOException {
+        String taskBody = new String(inputStream.readAllBytes(), DEFAULT_CHARSET);
+        Task task = gson.fromJson(taskBody, Task.class);
+        taskManager.addNewTask(task);
+    }
+
+    private void addEpic(InputStream inputStream) throws IOException {
+        String taskBody = new String(inputStream.readAllBytes(), DEFAULT_CHARSET);
+        Epic epic = gson.fromJson(taskBody, Epic.class);
+        taskManager.addNewEpic(epic);
+    }
+
+    private void addSubTask(InputStream inputStream) throws IOException {
+        String taskBody = new String(inputStream.readAllBytes(), DEFAULT_CHARSET);
+        SubTask subTask = gson.fromJson(taskBody, SubTask.class);
+        taskManager.addNewSubTask(subTask);
+    }
+
+    private void deleteTask(String query){
+        if (query == null){
+            taskManager.deleteAllTasks();
+        } else {
+            taskManager.deleteTask(getTaskIdFromQuery(query));
+        }
+    }
+
+    private void deleteEpic(String query){
+        if (query == null){
+            taskManager.deleteAllEpics();
+        } else {
+            taskManager.deleteEpic(getTaskIdFromQuery(query));
+        }
+    }
+
+    private void deleteSubTask(String query){
+        if (query == null){
+            taskManager.deleteAllEpics();
+        } else {
+            taskManager.deleteSubTask(getTaskIdFromQuery(query));
+        }
     }
 }
